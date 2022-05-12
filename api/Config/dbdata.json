@@ -1,0 +1,9 @@
+{
+    "conexion": {
+        "host": "localhost",
+        "user": "root_exam",
+        "pass": "pass",
+        "db": "dbname",
+        "apikey": "key"
+    }
+}
