@@ -24,7 +24,7 @@ const ImpresionFactura = () => {
 
   itemsFactura.forEach((e) => {
     let subtotal = parseFloat(e.precio_producto_factura) * parseFloat(e.cantidad_producto);
-    TOTAL = +subtotal;
+    TOTAL +=subtotal;
     let iva_porcent = parseFloat(e.porcentaje_impuesto);
     if (iva_porcent === "5") {
       TOTAL5 += subtotal;
