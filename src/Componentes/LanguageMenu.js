@@ -7,19 +7,13 @@ const LanguageMenu = () => {
 
     const {changeLang} = useLanguage()
     const [anchorEl, setAnchorEl] = useState(null);
-    const handleClick = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
+    const handleClick = (e) => {setAnchorEl(e.currentTarget);};
+    const handleClose = () => {setAnchorEl(null);}
 
 
     const cambiar = (lang)=>{
       handleClose()
       changeLang(lang);
-
     }
 
 

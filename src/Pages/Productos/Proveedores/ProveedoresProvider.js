@@ -9,6 +9,7 @@ const ProveedoresProvider = ({children}) => {
   const storage = JSON.parse(localStorage.getItem("dataProductos"));
   const {token_user} = useLogin()
   const [lista, setLista] = useState([]);
+  const limite = 50;
   const [cargando,setCargando] = useState(true)
   const initial = {id_proveedor:"",nombre_proveedor:"",telefono_proveedor:"",ruc_proveedor:""}
   const [formulario,setFormulario] = useState(initial)
@@ -79,7 +80,7 @@ const ProveedoresProvider = ({children}) => {
   }
 
   const getLista = useCallback( async()=>{
-    let res = await APICALLER.get({table:`proveedors`})
+    let res = await APICALLER.get({table:`proveedors`, pagesize:limite})
     res.response==="ok" ? setLista(res.results) : console.log(res);
     setCargando(false)
   },[]);

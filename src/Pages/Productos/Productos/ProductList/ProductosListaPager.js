@@ -15,7 +15,7 @@ const ProductosListaPager = () => {
       setPage(i);
     }
   };
-  if(cargando){
+  if(cargando.lista){
     return <></>
   }
 
