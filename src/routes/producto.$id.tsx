@@ -43,11 +43,14 @@ function ProductoDetalle() {
     const { data: tiendaData } = useQuery({
         queryKey: ["tienda", TENANT],
         queryFn: tiendaApi.info,
+        refetchOnWindowFocus: false,
     });
 
     const { data, isLoading, isError } = useQuery({
         queryKey: ["producto", TENANT, id],
         queryFn: () => productosApi.detalle(Number(id)),
+        staleTime: 1000 * 60 * 5, // 5 minutos
+        refetchOnWindowFocus: false,
     });
 
     const nombreTienda = tiendaData?.results.nombre ?? TENANT;
@@ -82,7 +85,7 @@ function ProductoDetalle() {
             <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4">
                 <div className="max-w-4xl mx-auto flex items-center gap-3">
                     <Link
-                        to=".."
+                        to="/"
                         className="flex items-center gap-1.5 text-slate-500 hover:text-slate-900 transition-colors text-sm"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,7 +118,7 @@ function ProductoDetalle() {
                 {isError && (
                     <div className="flex flex-col items-center justify-center py-24 gap-3 text-center">
                         <p className="text-slate-600 font-medium">Producto no encontrado</p>
-                        <Link to=".." className="text-slate-400 text-sm underline">
+                        <Link to="/" className="text-slate-400 text-sm underline">
                             Volver al catálogo
                         </Link>
                     </div>
@@ -231,7 +234,7 @@ function ProductoDetalle() {
                             </a>
 
                             <Link
-                                to=".."
+                                to="/"
                                 className="text-center text-slate-400 text-sm hover:text-slate-600 transition-colors"
                             >
                                 ← Ver más productos
