@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { TENANT } from "./services/base";
 import { productosApi } from "./services/productos-api";
+import { tiendaApi } from "./services/tienda-api";
+import { useEffect } from "react";
 
 
 interface ProductImage {
@@ -140,17 +142,34 @@ function App() {
   const { data, isLoading, isError, error } = useQuery<ApiResponse>({
     queryKey: ["productos", TENANT],
     queryFn: productosApi.lista,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // 5 minutos
   });
 
+  const { data: tiendaData } = useQuery({
+    queryKey: ["tienda", TENANT],
+    queryFn: tiendaApi.info,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const nombreTienda = tiendaData?.results.nombre ?? 'Tienda';
+
+  // Setea el <title> del documento
+  useEffect(() => {
+    document.title = nombreTienda;
+  }, [nombreTienda]);
   const products = data?.results ?? [];
+
+
 
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight capitalize">
-              {TENANT.replace(/-/g, " ")}
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+              {nombreTienda}  {/* ← nombre real de la tienda */}
             </h1>
             {!isLoading && !isError && (
               <p className="text-slate-400 text-xs mt-0.5">
