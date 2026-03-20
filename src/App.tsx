@@ -178,7 +178,7 @@ function App() {
             )}
           </div>
           <span className="text-xs text-slate-400 font-mono bg-slate-100 px-2 py-1 rounded-lg">
-            {TENANT}
+            Catálogo
           </span>
         </div>
       </header>
