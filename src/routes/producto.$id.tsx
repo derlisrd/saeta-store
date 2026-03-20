@@ -1,32 +1,14 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { productosApi } from "../services/productos-api";
-import { tiendaApi } from "../services/tienda-api";
 import { TENANT } from "../services/base";
+import { tiendaApi } from "../services/tienda";
+import { productosApi } from "../services/productos";
+import type { IProducto } from "../services/productos";
 
 export const Route = createFileRoute("/producto/$id")({
     component: ProductoDetalle,
 });
-
-interface ProductImage {
-    id: number;
-    url: string;
-    miniatura: string;
-    portada: number;
-}
-
-interface Product {
-    id: number;
-    nombre: string;
-    codigo: string;
-    precio_normal: number;
-    precio_promocional: number | null;
-    descuento_activo: number;
-    descripcion: string | null;
-    category: { id: number; nombre: string } | null;
-    images: ProductImage[];
-}
 
 function formatPrice(price: number) {
     return new Intl.NumberFormat("es-PY", {
@@ -40,48 +22,31 @@ function ProductoDetalle() {
     const { id } = Route.useParams();
     const [activeImg, setActiveImg] = useState(0);
 
-    const { data: tiendaData } = useQuery({
+    const { data: tienda } = useQuery({
         queryKey: ["tienda", TENANT],
         queryFn: tiendaApi.info,
         refetchOnWindowFocus: false,
+        staleTime: 1000 * 60 * 5,
     });
 
-    const { data, isLoading, isError } = useQuery({
+    const { data: producto, isLoading, isError } = useQuery<IProducto>({
         queryKey: ["producto", TENANT, id],
         queryFn: () => productosApi.detalle(Number(id)),
-        staleTime: 1000 * 60 * 5, // 5 minutos
+        staleTime: 1000 * 60 * 5,
         refetchOnWindowFocus: false,
     });
 
-    const nombreTienda = tiendaData?.results.nombre ?? TENANT;
-    const product: Product | undefined = data?.results;
+    const nombreTienda = tienda?.tienda_nombre ?? TENANT;
 
-    const hasDiscount =
-        product &&
-        product.descuento_activo === 1 &&
-        product.precio_promocional != null &&
-        product.precio_promocional > 0;
-
-    const discountPct =
-        hasDiscount && product
-            ? Math.round(
-                ((product.precio_normal - product.precio_promocional!) /
-                    product.precio_normal) *
-                100
-            )
-            : 0;
-
-    const whatsappNumber = tiendaData?.results.telefono?.replace(/\D/g, "") ?? "";
-    const whatsappMsg = product
+    const whatsappMsg = producto
         ? encodeURIComponent(
-            `Hola! Me interesa el producto: *${product.nombre}* (Cód: ${product.codigo})`
+            `Hola! Me interesa el producto: *${producto.nombre}* (Cód: ${producto.codigo})`
         )
         : "";
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMsg}`;
+    const whatsappUrl = `https://wa.me/${tienda?.tienda_whatsapp}?text=${whatsappMsg}`;
 
     return (
         <div className="min-h-screen bg-slate-50">
-            {/* Header */}
             <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4">
                 <div className="max-w-4xl mx-auto flex items-center gap-3">
                     <Link
@@ -101,7 +66,7 @@ function ProductoDetalle() {
             </header>
 
             <main className="max-w-4xl mx-auto px-4 py-8">
-                {/* Loading skeleton */}
+                {/* Loading */}
                 {isLoading && (
                     <div className="grid md:grid-cols-2 gap-8 animate-pulse">
                         <div className="aspect-square bg-white rounded-2xl border border-slate-100" />
@@ -124,17 +89,16 @@ function ProductoDetalle() {
                     </div>
                 )}
 
-                {/* Detalle */}
-                {product && (
+                {/* Detalle — producto ya viene adaptado por productosApi.detalle() */}
+                {producto && (
                     <div className="grid md:grid-cols-2 gap-8">
                         {/* Galería */}
                         <div className="flex flex-col gap-3">
-                            {/* Imagen principal */}
                             <div className="relative bg-white rounded-2xl border border-slate-100 aspect-square overflow-hidden">
-                                {product.images.length > 0 ? (
+                                {producto.images.length > 0 ? (
                                     <img
-                                        src={product.images[activeImg]?.url ?? product.images[activeImg]?.miniatura}
-                                        alt={product.nombre}
+                                        src={producto.images[activeImg]?.url ?? producto.images[activeImg]?.miniatura}
+                                        alt={producto.nombre}
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
@@ -146,17 +110,16 @@ function ProductoDetalle() {
                                         </svg>
                                     </div>
                                 )}
-                                {hasDiscount && (
+                                {producto.tiene_descuento && (
                                     <span className="absolute top-4 left-4 bg-rose-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow">
-                                        -{discountPct}%
+                                        -{producto.porcentaje_descuento}%
                                     </span>
                                 )}
                             </div>
 
-                            {/* Thumbnails */}
-                            {product.images.length > 1 && (
+                            {producto.images.length > 1 && (
                                 <div className="flex gap-2 flex-wrap">
-                                    {product.images.map((img, i) => (
+                                    {producto.images.map((img, i) => (
                                         <button
                                             key={img.id}
                                             onClick={() => setActiveImg(i)}
@@ -167,7 +130,7 @@ function ProductoDetalle() {
                                         >
                                             <img
                                                 src={img.miniatura}
-                                                alt={`${product.nombre} ${i + 1}`}
+                                                alt={`${producto.nombre} ${i + 1}`}
                                                 className="w-full h-full object-cover"
                                             />
                                         </button>
@@ -178,49 +141,45 @@ function ProductoDetalle() {
 
                         {/* Info */}
                         <div className="flex flex-col gap-4">
-                            {product.category && (
+                            {producto.category && (
                                 <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full w-fit">
-                                    {product.category.nombre}
+                                    {producto.category.nombre}
                                 </span>
                             )}
 
                             <h1 className="text-2xl font-bold text-slate-900 leading-tight">
-                                {product.nombre}
+                                {producto.nombre}
                             </h1>
 
                             <p className="text-slate-400 text-xs font-mono">
-                                Cód: {product.codigo}
+                                Cód: {producto.codigo}
                             </p>
 
-                            {/* Precio */}
                             <div className="mt-2">
-                                {hasDiscount ? (
+                                {producto.tiene_descuento ? (
                                     <div className="flex items-baseline gap-3">
                                         <span className="text-3xl font-bold text-rose-500">
-                                            {formatPrice(product.precio_promocional!)}
+                                            {formatPrice(producto.precio_promocional!)}
                                         </span>
                                         <span className="text-slate-400 text-lg line-through">
-                                            {formatPrice(product.precio_normal)}
+                                            {formatPrice(producto.precio_normal)}
                                         </span>
                                     </div>
                                 ) : (
                                     <span className="text-3xl font-bold text-slate-900">
-                                        {formatPrice(product.precio_normal)}
+                                        {formatPrice(producto.precio_normal)}
                                     </span>
                                 )}
                             </div>
 
-                            {/* Descripción */}
-                            {product.descripcion && (
+                            {producto.descripcion && (
                                 <p className="text-slate-600 text-sm leading-relaxed border-t border-slate-100 pt-4">
-                                    {product.descripcion}
+                                    {producto.descripcion}
                                 </p>
                             )}
 
-                            {/* Spacer */}
                             <div className="flex-1" />
 
-                            {/* WhatsApp CTA */}
                             <a
                                 href={whatsappUrl}
                                 target="_blank"

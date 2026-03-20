@@ -1,35 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { productosApi } from "../services/productos-api";
-import { tiendaApi } from "../services/tienda-api";
 import { TENANT } from "../services/base";
+import { tiendaApi } from "../services/tienda";
+import { productosApi } from "../services/productos";
+import type { IProducto } from "../services/productos";
 
 export const Route = createFileRoute("/")({
     component: Catalogo,
 });
-
-interface ProductImage {
-    id: number;
-    miniatura: string;
-    portada: number;
-}
-
-interface Product {
-    id: number;
-    nombre: string;
-    codigo: string;
-    precio_normal: number;
-    precio_promocional: number | null;
-    descuento_activo: number;
-    disponible: number;
-    category: { id: number; nombre: string } | null;
-    images: ProductImage[];
-}
-
-interface ApiResponse {
-    success: boolean;
-    results: Product[];
-}
 
 function formatPrice(price: number) {
     return new Intl.NumberFormat("es-PY", {
@@ -39,19 +17,7 @@ function formatPrice(price: number) {
     }).format(price);
 }
 
-function getCoverImage(images: ProductImage[]): string | null {
-    if (!images.length) return null;
-    const cover = images.find((img) => img.portada === 1);
-    return (cover ?? images[0]).miniatura;
-}
-
-function ProductCard({ product }: { product: Product }) {
-    const cover = getCoverImage(product.images);
-    const hasDiscount =
-        product.descuento_activo === 1 &&
-        product.precio_promocional != null &&
-        product.precio_promocional > 0;
-
+function ProductCard({ product }: { product: IProducto }) {
     return (
         <Link
             to="/producto/$id"
@@ -59,9 +25,9 @@ function ProductCard({ product }: { product: Product }) {
             className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 flex flex-col cursor-pointer"
         >
             <div className="relative bg-slate-50 aspect-square overflow-hidden">
-                {cover ? (
+                {product.imagen_portada ? (
                     <img
-                        src={cover}
+                        src={product.imagen_portada}
                         alt={product.nombre}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         loading="lazy"
@@ -75,9 +41,9 @@ function ProductCard({ product }: { product: Product }) {
                         </svg>
                     </div>
                 )}
-                {hasDiscount && (
+                {product.tiene_descuento && (
                     <span className="absolute top-3 left-3 bg-rose-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow">
-                        -{Math.round(((product.precio_normal - product.precio_promocional!) / product.precio_normal) * 100)}%
+                        -{product.porcentaje_descuento}%
                     </span>
                 )}
                 {product.category && (
@@ -93,7 +59,7 @@ function ProductCard({ product }: { product: Product }) {
                 </h2>
                 <p className="text-slate-400 text-xs font-mono">{product.codigo}</p>
                 <div className="mt-auto pt-2">
-                    {hasDiscount ? (
+                    {product.tiene_descuento ? (
                         <div className="flex items-baseline gap-2 flex-wrap">
                             <span className="text-rose-500 font-bold text-base">
                                 {formatPrice(product.precio_promocional!)}
@@ -127,22 +93,22 @@ function SkeletonCard() {
 }
 
 function Catalogo() {
-    const { data: tiendaData } = useQuery({
+    const { data: tienda } = useQuery({
         queryKey: ["tienda", TENANT],
         queryFn: tiendaApi.info,
         refetchOnWindowFocus: false,
-        staleTime: 1000 * 60 * 5, // 5 minutos
+        staleTime: 1000 * 60 * 5,
     });
 
-    const { data, isLoading, isError, error } = useQuery<ApiResponse>({
+    const { data: productos, isLoading, isError, error } = useQuery({
         queryKey: ["productos", TENANT],
         queryFn: productosApi.lista,
         refetchOnWindowFocus: false,
-        staleTime: 1000 * 60 * 5, // 5 minutos
+        staleTime: 1000 * 60 * 5,
     });
 
-    const nombreTienda = tiendaData?.results.nombre ?? TENANT;
-    const products = data?.results ?? [];
+    const nombreTienda = tienda?.tienda_nombre ?? TENANT;
+    const products = productos ?? [];
 
     return (
         <div className="min-h-screen bg-slate-50">

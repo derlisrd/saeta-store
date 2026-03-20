@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { tiendaApi } from "../services/tienda-api";
 import { TENANT } from "../services/base";
+import { tiendaApi } from "../services/tienda";
 
 function RootLayout() {
     const { data } = useQuery({
@@ -10,7 +10,7 @@ function RootLayout() {
         queryFn: tiendaApi.info,
     });
 
-    const nombreTienda = data?.results.nombre ?? TENANT;
+    const nombreTienda = data?.tienda_nombre ?? TENANT;
 
     useEffect(() => {
         document.title = nombreTienda;
