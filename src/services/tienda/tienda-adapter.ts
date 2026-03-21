@@ -8,7 +8,9 @@ function get(map: Record<string, string>, key: keyof ITienda, fallback = ""): st
   return map[key] ?? fallback;
 }
 
-export function tiendaAdapter(options: ITiendaOption[]): ITienda {
+export function tiendaAdapter(data: any): ITienda {
+
+  const options = data.results
   const map = toMap(options);
 
   return {

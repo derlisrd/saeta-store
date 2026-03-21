@@ -1,4 +1,4 @@
-import type { IProducto, IProductoRaw } from "./producto-model";
+import type { IProducto } from "./producto-model";
 
 function getImagenPortada(images: IProducto["images"]): string | null {
   if (!images.length) return null;
@@ -10,7 +10,10 @@ function getPorcentajeDescuento(normal: number, promocional: number): number {
   return Math.round(((normal - promocional) / normal) * 100);
 }
 
-export function productoAdapter(raw: IProductoRaw): IProducto {
+export function productoAdapter(data : any): IProducto {
+
+  const raw = data.result ?? data; // Para manejar tanto la respuesta de lista como de detalle
+
   const descuentoActivo = raw.descuento_activo === 1 && raw.precio_promocional != null && raw.precio_promocional > 0;
 
   return {
@@ -31,6 +34,7 @@ export function productoAdapter(raw: IProductoRaw): IProducto {
   };
 }
 
-export function productosAdapter(raws: IProductoRaw[]): IProducto[] {
+export function productosAdapter(data: any): IProducto[] {
+  const raws = data.results;
   return raws.map(productoAdapter);
 }

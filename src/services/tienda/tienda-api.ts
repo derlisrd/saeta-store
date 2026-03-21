@@ -8,6 +8,6 @@ export const tiendaApi = {
     if (!res.ok) throw new Error(`Error al obtener la tienda: HTTP ${res.status}`);
 
     const data: ITiendaRaw = await res.json();
-    return tiendaAdapter(data.results);
+    return tiendaAdapter(data);
   }
 };

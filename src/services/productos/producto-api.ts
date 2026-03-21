@@ -8,7 +8,7 @@ export const productosApi = {
     if (!res.ok) throw new Error(`Error al obtener los productos: HTTP ${res.status}`);
 
     const data: IProductoListResponse = await res.json();
-    return productosAdapter(data.results);
+    return productosAdapter(data);
   },
 
   detalle: async (id: number): Promise<IProducto> => {
@@ -16,6 +16,6 @@ export const productosApi = {
     if (!res.ok) throw new Error(`Error al obtener el producto: HTTP ${res.status}`);
 
     const data: IProductoDetailResponse = await res.json();
-    return productoAdapter(data.results);
+    return productoAdapter(data);
   }
 };
