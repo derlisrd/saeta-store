@@ -12,7 +12,7 @@ function getPorcentajeDescuento(normal: number, promocional: number): number {
 
 export function productoAdapter(data : any): IProducto {
 
-  const raw = data.result ?? data; // Para manejar tanto la respuesta de lista como de detalle
+  const raw = data.results ?? data; // Para manejar tanto la respuesta de lista como de detalle
 
   const descuentoActivo = raw.descuento_activo === 1 && raw.precio_promocional != null && raw.precio_promocional > 0;
 
