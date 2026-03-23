@@ -5,22 +5,19 @@ import { TENANT } from "../services/base";
 import { tiendaApi } from "../services/tienda";
 import { productosApi } from "../services/productos";
 import type { IProducto } from "../services/productos";
+import { useCartStore } from "../store/cart-store";
+import { formatPrice } from "../utils/formats";
 
 export const Route = createFileRoute("/producto/$id")({
     component: ProductoDetalle,
 });
 
-function formatPrice(price: number) {
-    return new Intl.NumberFormat("es-PY", {
-        style: "currency",
-        currency: "PYG",
-        minimumFractionDigits: 0,
-    }).format(price);
-}
+
 
 function ProductoDetalle() {
     const { id } = Route.useParams();
     const [activeImg, setActiveImg] = useState(0);
+    const addItem = useCartStore((state) => state.addItem);
 
     const { data: tienda } = useQuery({
         queryKey: ["tienda", TENANT],
@@ -36,7 +33,6 @@ function ProductoDetalle() {
         refetchOnWindowFocus: false,
     });
 
-    const nombreTienda = tienda?.tienda_nombre ?? TENANT;
 
     const whatsappMsg = producto
         ? encodeURIComponent(
@@ -47,26 +43,21 @@ function ProductoDetalle() {
 
     return (
         <div className="min-h-screen bg-slate-50">
-            <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4">
-                <div className="max-w-4xl mx-auto flex items-center gap-3">
-                    <Link
-                        to="/"
-                        className="flex items-center gap-1.5 text-slate-500 hover:text-slate-900 transition-colors text-sm"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
-                        Volver
-                    </Link>
-                    <span className="text-slate-300">|</span>
-                    <span className="text-slate-700 font-semibold text-sm truncate">
-                        {nombreTienda}
-                    </span>
-                </div>
-            </header>
 
-            <main className="max-w-4xl mx-auto px-4 py-8">
-                {/* Loading */}
+
+
+
+
+            <main className="max-w-4xl mx-auto px-4">
+                <Link
+                    to="/"
+                    className="flex items-center gap-2 my-4 text-slate-500 hover:text-slate-900 transition-colors text-md"
+                >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Volver
+                </Link>
                 {isLoading && (
                     <div className="grid md:grid-cols-2 gap-8 animate-pulse">
                         <div className="aspect-square bg-white rounded-2xl border border-slate-100" />
@@ -179,7 +170,15 @@ function ProductoDetalle() {
                             )}
 
                             <div className="flex-1" />
-
+                            <button
+                                onClick={() => {
+                                    if (producto) addItem(producto);
+                                    // Opcional: Notificar al usuario o redirigir
+                                }}
+                                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 px-6 rounded-2xl transition-transform active:scale-95 shadow-lg"
+                            >
+                                Agregar a la canasta
+                            </button>
                             <a
                                 href={whatsappUrl}
                                 target="_blank"

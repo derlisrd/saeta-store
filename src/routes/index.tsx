@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { TENANT } from "../services/base";
-import { tiendaApi } from "../services/tienda";
 import { productosApi } from "../services/productos";
 import type { IProducto } from "../services/productos";
+import CardSkeleton from "../components/skeletons/card-skeleton";
 
 export const Route = createFileRoute("/")({
     component: Catalogo,
@@ -79,26 +79,11 @@ function ProductCard({ product }: { product: IProducto }) {
     );
 }
 
-function SkeletonCard() {
-    return (
-        <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 animate-pulse">
-            <div className="aspect-square bg-slate-100" />
-            <div className="p-4 flex flex-col gap-3">
-                <div className="h-4 bg-slate-100 rounded w-3/4" />
-                <div className="h-3 bg-slate-100 rounded w-1/2" />
-                <div className="h-5 bg-slate-100 rounded w-1/3 mt-2" />
-            </div>
-        </div>
-    );
-}
+
+
+
 
 function Catalogo() {
-    const { data: tienda } = useQuery({
-        queryKey: ["tienda", TENANT],
-        queryFn: tiendaApi.info,
-        refetchOnWindowFocus: false,
-        staleTime: 1000 * 60 * 5,
-    });
 
     const { data: productos, isLoading, isError, error } = useQuery({
         queryKey: ["productos", TENANT],
@@ -107,28 +92,10 @@ function Catalogo() {
         staleTime: 1000 * 60 * 5,
     });
 
-    const nombreTienda = tienda?.tienda_nombre ?? TENANT;
     const products = productos ?? [];
 
     return (
         <div className="min-h-screen bg-slate-50">
-            <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4">
-                <div className="max-w-6xl mx-auto flex items-center justify-between">
-                    <div>
-                        <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-                            {nombreTienda}
-                        </h1>
-                        {!isLoading && !isError && (
-                            <p className="text-slate-400 text-xs mt-0.5">
-                                {products.length} productos disponibles
-                            </p>
-                        )}
-                    </div>
-                    <span className="text-xs text-slate-400 font-mono bg-slate-100 px-2 py-1 rounded-lg">
-                        Catálogo
-                    </span>
-                </div>
-            </header>
 
             <main className="max-w-6xl mx-auto px-4 py-8">
                 {isError && (
@@ -146,7 +113,7 @@ function Catalogo() {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                     {isLoading
-                        ? Array.from({ length: 10 }).map((_, i) => <SkeletonCard key={i} />)
+                        ? Array.from({ length: 10 }).map((_, i) => <CardSkeleton key={i} />)
                         : products.map((product) => (
                             <ProductCard key={product.id} product={product} />
                         ))}
