@@ -1,9 +1,9 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createLazyFileRoute } from "@tanstack/react-router";
 import { useCartStore } from "../store/cart-store";
 import { useTiendaStore } from "../store/tienda-info-store"; // Importamos el nuevo store
 import { formatPrice } from "../utils/formats";
 
-export const Route = createFileRoute("/carrito")({
+export const Route = createLazyFileRoute("/carrito")({
     component: CarritoPage,
 });
 

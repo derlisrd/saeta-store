@@ -11,22 +11,22 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as CarritoRouteImport } from './routes/carrito'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductoIdRouteImport } from './routes/producto.$id'
 
 const ContactoLazyRouteImport = createFileRoute('/contacto')()
+const CarritoLazyRouteImport = createFileRoute('/carrito')()
 
 const ContactoLazyRoute = ContactoLazyRouteImport.update({
   id: '/contacto',
   path: '/contacto',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/contacto.lazy').then((d) => d.Route))
-const CarritoRoute = CarritoRouteImport.update({
+const CarritoLazyRoute = CarritoLazyRouteImport.update({
   id: '/carrito',
   path: '/carrito',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/carrito.lazy').then((d) => d.Route))
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -40,20 +40,20 @@ const ProductoIdRoute = ProductoIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/carrito': typeof CarritoRoute
+  '/carrito': typeof CarritoLazyRoute
   '/contacto': typeof ContactoLazyRoute
   '/producto/$id': typeof ProductoIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/carrito': typeof CarritoRoute
+  '/carrito': typeof CarritoLazyRoute
   '/contacto': typeof ContactoLazyRoute
   '/producto/$id': typeof ProductoIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/carrito': typeof CarritoRoute
+  '/carrito': typeof CarritoLazyRoute
   '/contacto': typeof ContactoLazyRoute
   '/producto/$id': typeof ProductoIdRoute
 }
@@ -67,7 +67,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CarritoRoute: typeof CarritoRoute
+  CarritoLazyRoute: typeof CarritoLazyRoute
   ContactoLazyRoute: typeof ContactoLazyRoute
   ProductoIdRoute: typeof ProductoIdRoute
 }
@@ -85,7 +85,7 @@ declare module '@tanstack/react-router' {
       id: '/carrito'
       path: '/carrito'
       fullPath: '/carrito'
-      preLoaderRoute: typeof CarritoRouteImport
+      preLoaderRoute: typeof CarritoLazyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -107,7 +107,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CarritoRoute: CarritoRoute,
+  CarritoLazyRoute: CarritoLazyRoute,
   ContactoLazyRoute: ContactoLazyRoute,
   ProductoIdRoute: ProductoIdRoute,
 }
