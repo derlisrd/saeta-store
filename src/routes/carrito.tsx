@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useCartStore } from "../store/cart-store";
 import { useTiendaStore } from "../store/tienda-info-store"; // Importamos el nuevo store
 import { formatPrice } from "../utils/formats";

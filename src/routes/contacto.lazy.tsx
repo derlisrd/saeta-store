@@ -1,7 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link, createLazyFileRoute } from "@tanstack/react-router";
 import { useTiendaStore } from "../store/tienda-info-store";
 
-export const Route = createFileRoute("/contacto")({
+export const Route = createLazyFileRoute("/contacto")({
     component: ContactoPage,
 });
 
