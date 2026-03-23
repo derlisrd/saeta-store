@@ -1,90 +1,24 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { TENANT } from "../services/base";
 import { productosApi } from "../services/productos";
-import type { IProducto } from "../services/productos";
 import CardSkeleton from "../components/skeletons/card-skeleton";
+import ProductCard from "../components/products/product-card";
+import { useMemo, useState } from "react";
 
 export const Route = createFileRoute("/")({
     component: Catalogo,
 });
 
-function formatPrice(price: number) {
-    return new Intl.NumberFormat("es-PY", {
-        style: "currency",
-        currency: "PYG",
-        minimumFractionDigits: 0,
-    }).format(price);
-}
 
-function ProductCard({ product }: { product: IProducto }) {
-    return (
-        <Link
-            to="/producto/$id"
-            params={{ id: String(product.id) }}
-            className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 flex flex-col cursor-pointer"
-        >
-            <div className="relative bg-slate-50 aspect-square overflow-hidden">
-                {product.imagen_portada ? (
-                    <img
-                        src={product.imagen_portada}
-                        alt={product.nombre}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        loading="lazy"
-                    />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-300">
-                        <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1}
-                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                            />
-                        </svg>
-                    </div>
-                )}
-                {product.tiene_descuento && (
-                    <span className="absolute top-3 left-3 bg-rose-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow">
-                        -{product.porcentaje_descuento}%
-                    </span>
-                )}
-                {product.category && (
-                    <span className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-slate-600 text-xs px-2 py-1 rounded-full border border-slate-200">
-                        {product.category.nombre}
-                    </span>
-                )}
-            </div>
 
-            <div className="p-4 flex flex-col gap-2 flex-1">
-                <h2 className="font-semibold text-slate-800 text-sm leading-tight line-clamp-2">
-                    {product.nombre}
-                </h2>
-                <p className="text-slate-400 text-xs font-mono">{product.codigo}</p>
-                <div className="mt-auto pt-2">
-                    {product.tiene_descuento ? (
-                        <div className="flex items-baseline gap-2 flex-wrap">
-                            <span className="text-rose-500 font-bold text-base">
-                                {formatPrice(product.precio_promocional!)}
-                            </span>
-                            <span className="text-slate-400 text-xs line-through">
-                                {formatPrice(product.precio_normal)}
-                            </span>
-                        </div>
-                    ) : (
-                        <span className="text-slate-800 font-bold text-base">
-                            {formatPrice(product.precio_normal)}
-                        </span>
-                    )}
-                </div>
-            </div>
-        </Link>
-    );
-}
 
 
 
 
 
 function Catalogo() {
-
+    const [search, setSearch] = useState("")
     const { data: productos, isLoading, isError, error } = useQuery({
         queryKey: ["productos", TENANT],
         queryFn: productosApi.lista,
@@ -92,7 +26,18 @@ function Catalogo() {
         staleTime: 1000 * 60 * 5,
     });
 
-    const products = productos ?? [];
+
+    const filteredProducts = useMemo(() => {
+        if (!productos) return [];
+        if (!search.trim()) return productos;
+
+        const term = search.toLowerCase();
+        return productos.filter(p =>
+            p.nombre.toLowerCase().includes(term) ||
+            p.codigo.toLowerCase().includes(term) ||
+            p.category?.nombre.toLowerCase().includes(term)
+        );
+    }, [productos, search]);
 
     return (
         <div className="min-h-screen bg-slate-50">
@@ -111,15 +56,40 @@ function Catalogo() {
                     </div>
                 )}
 
+                <div className="relative group mb-4">
+                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                        <svg className="w-5 h-5 group-focus-within:text-emerald-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </span>
+                    <input
+                        type="text"
+                        placeholder="Buscar por nombre, código o categoría..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="w-full bg-slate-100 border-none rounded-2xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all outline-none text-slate-700"
+                    />
+                    {search && (
+                        <button
+                            onClick={() => setSearch("")}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+                        >
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                            </svg>
+                        </button>
+                    )}
+                </div>
+
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                     {isLoading
                         ? Array.from({ length: 10 }).map((_, i) => <CardSkeleton key={i} />)
-                        : products.map((product) => (
+                        : filteredProducts.map((product) => (
                             <ProductCard key={product.id} product={product} />
                         ))}
                 </div>
 
-                {!isLoading && !isError && products.length === 0 && (
+                {!isLoading && !isError && filteredProducts.length === 0 && (
                     <div className="flex items-center justify-center py-24 text-slate-400">
                         <p>Sin productos</p>
                     </div>
