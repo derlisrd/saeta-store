@@ -73,6 +73,10 @@ function RootLayout() {
 
 
             <Outlet />
+
+            <footer className="mt-12 py-6 text-center text-slate-500 text-sm border-t border-slate-200">
+                &copy; {new Date().getFullYear()} {tienda?.tienda_nombre || data?.tienda_nombre || "SaetaStore"}. Hecho con Saeta Mini y con ❤️.
+            </footer>
         </div>
     );
 }

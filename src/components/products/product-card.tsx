@@ -7,14 +7,14 @@ export default function ProductCard({ product }: { product: IProducto }) {
         <Link
             to="/producto/$id"
             params={{ id: String(product.id) }}
-            className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 flex flex-col cursor-pointer"
+            className="group bg-white p-1.5 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 flex flex-col cursor-pointer"
         >
             <div className="relative bg-slate-50 aspect-square overflow-hidden">
                 {product.imagen_portada ? (
                     <img
                         src={product.imagen_portada}
                         alt={product.nombre}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500"
                         loading="lazy"
                     />
                 ) : (
